@@ -1,8 +1,7 @@
 from Bio import Align
 from Bio.Align import substitution_matrices
-# matrix = substitution_matrices.load("BLOSUM62")
 
-GAP_PENALTY = 1
+GAP_PENALTY = 8
 
 def global_alignment(seq1, seq2, scoring_function):
     """Global sequence alignment using the Needleman–Wunsch algorithm.
@@ -35,6 +34,9 @@ def global_alignment(seq1, seq2, scoring_function):
 
     """
     # raise NotImplementedError()
+    aligner = Align.PairwiseAligner()
+    blosum_matrix = substitution_matrices.load("BLOSUM62")
+    aligner.substitution_matrix = blosum_matrix
 
     rows = len(seq2) + 1
     cols = len(seq1) + 1
@@ -55,13 +57,15 @@ def global_alignment(seq1, seq2, scoring_function):
     # recurrence
     for i in range(1, rows):
         for j in range(1, cols):
-            recurr_one = alignment_matrix[i-1][j-1] + scoring_function(seq1[j-1], seq2[i-1])
+            # recurr_one = alignment_matrix[i-1][j-1] + scoring_function(seq1[j-1], seq2[i-1])
+            recurr_one = alignment_matrix[i-1][j-1] + aligner.score(seq1[j-1], seq2[i-1])
             recurr_two = alignment_matrix[i-1][j] - GAP_PENALTY
             recurr_three = alignment_matrix[i][j-1] - GAP_PENALTY
 
             alignment_matrix[i][j] = max(recurr_one, recurr_two, recurr_three)
 
-    # TO DO - add backtracking
+    # TO DO - add backtracking from bottom right
+    # print(alignment_matrix[rows-1][cols-1])
 
 
 
