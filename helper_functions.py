@@ -42,31 +42,56 @@ def global_alignment(seq1, seq2, scoring_function):
     cols = len(seq1) + 1
 
     # initialise matrix
-    alignment_matrix = [["" for _ in range(cols)] for _ in range(rows)]
+    alignment_matrix = [[{} for _ in range(cols)] for _ in range(rows)]
     alignment_matrix[0][0] = 0
 
     # set matrix initial row
     for i in range(rows):
-        alignment_matrix[i][0] = -i*GAP_PENALTY
-
+        alignment_matrix[i][0] = {"score": -i*GAP_PENALTY,
+                                  "prev_cell_row": "",
+                                  "prev_cell_col": ""}
 
     # set matrix initial col
     for j in range(cols):
-        alignment_matrix[0][j] = -j*GAP_PENALTY
+        alignment_matrix[0][j] = {"score": -j*GAP_PENALTY,
+                                  "prev_cell_row": "",
+                                  "prev_cell_col": ""}
 
     # recurrence
     for i in range(1, rows):
         for j in range(1, cols):
-            # recurr_one = alignment_matrix[i-1][j-1] + scoring_function(seq1[j-1], seq2[i-1])
-            recurr_one = alignment_matrix[i-1][j-1] + aligner.score(seq1[j-1], seq2[i-1])
-            recurr_two = alignment_matrix[i-1][j] - GAP_PENALTY
-            recurr_three = alignment_matrix[i][j-1] - GAP_PENALTY
+            # recurr_one = alignment_matrix[i-1][j-1]["score"] + scoring_function(seq1[j-1], seq2[i-1])
+            recurr_one = alignment_matrix[i-1][j-1]["score"] + aligner.score(seq1[j-1], seq2[i-1])
+            recurr_two = alignment_matrix[i-1][j]["score"] - GAP_PENALTY
+            recurr_three = alignment_matrix[i][j-1]["score"] - GAP_PENALTY
 
-            alignment_matrix[i][j] = max(recurr_one, recurr_two, recurr_three)
+            scores = [recurr_one, recurr_two, recurr_three]
+            max_score = max(scores)
+            max_score_index = scores.index(max_score)
+
+            alignment_matrix[i][j]["score"] = max_score
+
+            # traceback pointer
+            if max_score_index == 0:
+                alignment_matrix[i][j]["prev_cell_row"] = i - 1
+                alignment_matrix[i][j]["prev_cell_col"] = j - 1
+            elif max_score_index == 1:
+                alignment_matrix[i][j]["prev_cell_row"] = i - 1
+                alignment_matrix[i][j]["prev_cell_col"] = j
+            elif max_score_index == 2:
+                alignment_matrix[i][j]["prev_cell_row"] = i
+                alignment_matrix[i][j]["prev_cell_col"] = j - 1
+
 
     # TO DO - add backtracking from bottom right
-    # print(alignment_matrix[rows-1][cols-1])
+    print(alignment_matrix[rows-1][cols-1])
 
+    # print(alignment_matrix)
+    # traceback_i = len(seq2) + 1
+    # traceback_j = len(seq1) + 1
+    # traceback_k = 0
+    # traceback_id = 0
+    # while
 
 
 def local_alignment(seq1, seq2, scoring_function):
@@ -108,7 +133,7 @@ def scoring_function_simple(aa_i,aa_j):
     return (score)
 
 def main():
-    global_alignment('abracadabra', 'dabarakadara',lambda x, y: [-1, 1][x == y])
+    global_alignment('HEAGAWGHEE', 'PAWHEAE',lambda x, y: [-1, 1][x == y])
 
 if __name__ == '__main__':
     main()
