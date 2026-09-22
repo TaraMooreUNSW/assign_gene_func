@@ -33,11 +33,6 @@ def global_alignment(seq1, seq2, scoring_function):
     Other alignments are not possible.
 
     """
-    # raise NotImplementedError()
-    aligner = Align.PairwiseAligner()
-    blosum_matrix = substitution_matrices.load("BLOSUM62")
-    aligner.substitution_matrix = blosum_matrix
-
     rows = len(seq2) + 1
     cols = len(seq1) + 1
 
@@ -48,20 +43,20 @@ def global_alignment(seq1, seq2, scoring_function):
     # set matrix initial row
     for i in range(rows):
         alignment_matrix[i][0] = {"score": -i*GAP_PENALTY,
-                                  "prev_cell_row": "",
-                                  "prev_cell_col": ""}
+                                  "prev_cell_row": i - 1,
+                                  "prev_cell_col": 0}
 
     # set matrix initial col
     for j in range(cols):
         alignment_matrix[0][j] = {"score": -j*GAP_PENALTY,
-                                  "prev_cell_row": "",
-                                  "prev_cell_col": ""}
+                                  "prev_cell_row": 0,
+                                  "prev_cell_col": j - 1}
 
     # recurrence
     for i in range(1, rows):
         for j in range(1, cols):
-            # recurr_one = alignment_matrix[i-1][j-1]["score"] + scoring_function(seq1[j-1], seq2[i-1])
-            recurr_one = alignment_matrix[i-1][j-1]["score"] + aligner.score(seq1[j-1], seq2[i-1])
+            recurr_one = (alignment_matrix[i-1][j-1]["score"]
+                        + scoring_function(seq1[j-1], seq2[i-1]))
             recurr_two = alignment_matrix[i-1][j]["score"] - GAP_PENALTY
             recurr_three = alignment_matrix[i][j-1]["score"] - GAP_PENALTY
 
@@ -71,7 +66,7 @@ def global_alignment(seq1, seq2, scoring_function):
 
             alignment_matrix[i][j]["score"] = max_score
 
-            # traceback pointer
+            # traceback recording
             if max_score_index == 0:
                 alignment_matrix[i][j]["prev_cell_row"] = i - 1
                 alignment_matrix[i][j]["prev_cell_col"] = j - 1
@@ -83,15 +78,30 @@ def global_alignment(seq1, seq2, scoring_function):
                 alignment_matrix[i][j]["prev_cell_col"] = j - 1
 
 
-    # TO DO - add backtracking from bottom right
-    print(alignment_matrix[rows-1][cols-1])
+    # Traceback from bottom right
+    seq1_aligned = list(seq1)
+    seq2_aligned = list(seq2)
 
-    # print(alignment_matrix)
-    # traceback_i = len(seq2) + 1
-    # traceback_j = len(seq1) + 1
-    # traceback_k = 0
-    # traceback_id = 0
-    # while
+    t_i = len(seq2)
+    t_j = len(seq1)
+    while t_i > 0 or t_j > 0:
+        i_backpoint = alignment_matrix[t_i][t_j]["prev_cell_row"]
+        j_backpoint = alignment_matrix[t_i][t_j]["prev_cell_col"]
+
+        if i_backpoint == t_i:
+            t_j = j_backpoint           # gap in seq2
+            seq2_aligned.insert(t_i, '-')
+        elif j_backpoint == t_j:
+            t_i = i_backpoint           # gap in seq1
+            seq1_aligned.insert(t_j, '-')
+        else:
+            t_i = i_backpoint
+            t_j = j_backpoint
+
+    seq1_final = "".join(seq1_aligned)
+    seq2_final = "".join(seq2_aligned)
+
+    return(seq1_final, seq2_final, alignment_matrix[rows - 1][cols - 1]["score"])
 
 
 def local_alignment(seq1, seq2, scoring_function):
@@ -132,8 +142,17 @@ def scoring_function_simple(aa_i,aa_j):
     score = [-1, 1][aa_i == aa_j]
     return (score)
 
-def main():
-    global_alignment('HEAGAWGHEE', 'PAWHEAE',lambda x, y: [-1, 1][x == y])
+def scoring_BLOSUM62(aa_i, aa_j):
+    aligner = Align.PairwiseAligner()
+    blosum_matrix = substitution_matrices.load("BLOSUM62")
+    aligner.substitution_matrix = blosum_matrix
 
-if __name__ == '__main__':
-    main()
+    score = aligner.score(aa_i, aa_j)
+    return score
+
+# def main():
+#     global_alignment('HEAGAWGHEE', 'PAWHEAE', scoring_BLOSUM62)
+#     # global_alignment("abracadabra", "dabarakadara", lambda x, y: [-1, 1][x == y])
+
+# if __name__ == '__main__':
+#     main()
