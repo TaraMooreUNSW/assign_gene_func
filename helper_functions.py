@@ -63,8 +63,6 @@ def global_alignment(seq1, seq2, scoring_function):
     # recurrence
     for i in range(1, rows):
         for j in range(1, cols):
-            # recurr_one = (alignment_matrix[i-1][j-1]["score"]
-            #             + scoring_function(seq1[j-1], seq2[i-1]))
             recurr_one = (alignment_matrix[i-1][j-1]["score"] + store_cache[(seq1[j-1], seq2[i-1])])
             recurr_two = alignment_matrix[i-1][j]["score"] - GAP_PENALTY
             recurr_three = alignment_matrix[i][j-1]["score"] - GAP_PENALTY
@@ -110,7 +108,6 @@ def global_alignment(seq1, seq2, scoring_function):
     seq1_final = "".join(seq1_aligned)
     seq2_final = "".join(seq2_aligned)
 
-    print(f"{score}")
     return(seq1_final, seq2_final, f"{score:.1f}")
 
 
@@ -173,10 +170,7 @@ def local_alignment(seq1, seq2, scoring_function):
 
     for i in range(1, rows):
         for j in range(1, cols):
-            # recurr_one = (alignment_matrix[i-1][j-1]["score"]
-            #             + scoring_function(seq1[j-1], seq2[i-1]))
-            recurr_one = (alignment_matrix[i-1][j-1]["score"]
-                        + store_cache[(seq1[j-1], seq2[i-1])])
+            recurr_one = (alignment_matrix[i-1][j-1]["score"] + store_cache[(seq1[j-1], seq2[i-1])])
             recurr_two = alignment_matrix[i-1][j]["score"] - GAP_PENALTY
             recurr_three = alignment_matrix[i][j-1]["score"] - GAP_PENALTY
 
@@ -239,21 +233,21 @@ def scoring_function_simple(aa_i,aa_j):
     Scoring function using simple substitution matrix
 
     Parameters
-        ----------
-        aa_i: str
-            First amino acid.
-        aa_j: str
-            Second amino acid.
+    ----------
+    aa_i: str
+        First amino acid.
+    aa_j: str
+        Second amino acid.
 
-        Returns
-        -------
-        int
-            Score of match between amino acids.
+    Returns
+    -------
+    int
+        Score of match between amino acids.
 
-        Examples
-        --------
-        >>> scoring_function_simple('W', 'W')
-        (1)
+    Examples
+    --------
+    >>> scoring_function_simple('W', 'W')
+    (1)
     """
     score = [-1, 1][aa_i == aa_j]
     return (score)
@@ -263,21 +257,21 @@ def scoring_BLOSUM62(aa_i, aa_j):
     Scoring function using the BLOSUM62 substitution matrix
 
     Parameters
-        ----------
-        aa_i: str
-            First amino acid.
-        aa_j: str
-            Second amino acid.
+    ----------
+    aa_i: str
+        First amino acid.
+    aa_j: str
+        Second amino acid.
 
-        Returns
-        -------
-        float
-            Score of match between amino acids.
+    Returns
+    -------
+    float
+        Score of match between amino acids.
 
-        Examples
-        --------
-        >>> scoring_BLOSUM('W', 'W')
-        (11.0)
+    Examples
+    --------
+    >>> scoring_BLOSUM('W', 'W')
+    (11.0)
     """
     aligner = Align.PairwiseAligner()
     blosum_matrix = substitution_matrices.load("BLOSUM50")
