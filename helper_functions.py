@@ -1,7 +1,7 @@
 from Bio import Align
 from Bio.Align import substitution_matrices
 
-GAP_PENALTY = 1
+GAP_PENALTY = 8
 
 def global_alignment(seq1, seq2, scoring_function):
     """Global sequence alignment using the Needleman–Wunsch algorithm.
@@ -36,6 +36,7 @@ def global_alignment(seq1, seq2, scoring_function):
     rows = len(seq2) + 1
     cols = len(seq1) + 1
 
+    # cache scoring function to improve efficiency
     uniq_seq1 = set(seq1)
     uniq_seq2 = set(seq2)
     store_cache = {
@@ -63,7 +64,7 @@ def global_alignment(seq1, seq2, scoring_function):
     # recurrence
     for i in range(1, rows):
         for j in range(1, cols):
-            recurr_one = (alignment_matrix[i-1][j-1]["score"] + store_cache[(seq1[j-1], seq2[i-1])])
+            recurr_one = alignment_matrix[i-1][j-1]["score"] + store_cache[(seq1[j-1], seq2[i-1])]
             recurr_two = alignment_matrix[i-1][j]["score"] - GAP_PENALTY
             recurr_three = alignment_matrix[i][j-1]["score"] - GAP_PENALTY
 
@@ -144,6 +145,7 @@ def local_alignment(seq1, seq2, scoring_function):
     rows = len(seq2) + 1
     cols = len(seq1) + 1
 
+    # cache scoring function to improve efficiency
     uniq_seq1 = set(seq1)
     uniq_seq2 = set(seq2)
     store_cache = {
@@ -170,7 +172,7 @@ def local_alignment(seq1, seq2, scoring_function):
 
     for i in range(1, rows):
         for j in range(1, cols):
-            recurr_one = (alignment_matrix[i-1][j-1]["score"] + store_cache[(seq1[j-1], seq2[i-1])])
+            recurr_one = alignment_matrix[i-1][j-1]["score"] + store_cache[(seq1[j-1], seq2[i-1])]
             recurr_two = alignment_matrix[i-1][j]["score"] - GAP_PENALTY
             recurr_three = alignment_matrix[i][j-1]["score"] - GAP_PENALTY
 
@@ -252,7 +254,7 @@ def scoring_function_simple(aa_i,aa_j):
     score = [-1, 1][aa_i == aa_j]
     return (score)
 
-def scoring_BLOSUM62(aa_i, aa_j):
+def scoring_blosum62(aa_i, aa_j):
     """
     Scoring function using the BLOSUM62 substitution matrix
 
