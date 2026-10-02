@@ -281,12 +281,3 @@ def scoring_blosum62(aa_i, aa_j):
 
     score = aligner.score(aa_i, aa_j)
     return score
-
-# def main():
-    # global_alignment("abracadabra", "dabarakadara", lambda x, y: [-1, 1][x == y])
-    # global_alignment("HEAGAWGHEE", "PAWHEAE", scoring_BLOSUM62)
-    # local_alignment("HEAGAWGHEE", "PAWHEAE", scoring_BLOSUM62)
-    # local_alignment("pending itch", "unending glitch", lambda x, y: [-1, 1][x == y])
-
-# if __name__ == '__main__':
-#     main()
